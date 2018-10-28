@@ -1,0 +1,64 @@
+library(readr)
+library(sqldf)
+library(foreach)
+getMixes <- function(data){
+  unq <- unique(c(data$mix1_instrument, data$mix2_instrument))
+  ord <- unq[order(unq)]
+  return(as.list(setNames(1:length(ord), ord)))
+}
+
+selectInstrument <- function(instrument, equal = TRUE, data){
+  mix1 <- 'SELECT * FROM data where mix1_instrument '
+  mix2 <- " mix2_instrument "
+  instrument <- paste0(' "', instrument, '" ')
+  if(equal){
+    equal <- "="
+    mix1 <- paste0(mix1, equal)
+    mix2 <- paste0("OR", mix2, equal)
+  } else {
+    notEqual <- "!="
+    mix1 <- paste0(mix1, notEqual)
+    mix2 <- paste0("AND", mix2, notEqual)
+  }
+  sql <- paste0(mix1, instrument, mix2, instrument)
+  #View(sql)
+  selection <- sqldf(sql)
+  return(selection)
+}
+rainingData <- data.frame(read_csv("~/Documents/Uni/Data Mining/Project/Original Data Download/all/train.csv"))
+mixes <- getMixes(trainingData)
+
+#instruments <- data.frame()
+
+#Accordian <- selectInstrument(instrument = "Accordian", data = trainingData)
+
+#accordian <-  list(setNames(1:2, c("true", "false")))
+
+#accordian$true <- 1
+#accordian$false <- 2
+
+#mixes$Accordian$true <- NA
+#mixes$Accordian$false <- NA
+
+mixNames <- names(mixes)
+instruments <- list(setNames(1:length(mixes), mixes))
+for(i in seq(mixes)){
+  instruments[mixNames[i]] <- list(setNames(1:2, c("t","f")))
+  instruments[mixNames[i]]$t <- selectInstrument(instrument = mixNames[i], data = trainingData)
+  instruments[mixNames[i]]$f <- selectInstrument(instrument = mixNames[i],equal =  FALSE, data = trainingData)
+}
+View(mixes)
+
+#for(mix in names(mixes)) {
+ # print(mix)
+  #mix$t <- selectInstrument(instrument = mix, data = trainingData)
+#  mix$f <- selectInstrument(instrument = mix,equal =  FALSE, data = trainingData)
+  
+  #assign(paste0(mix), list(c("t","f")))
+  #mix$t <- selectInstrument(instrument = mix, data = trainingData)
+  #assign(paste0(mixes[i], "$false"), selectInstrument(instrument = mixes[i],equal =  FALSE, data = trainingData))
+#}
+
+
+
+

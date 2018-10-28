@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1539883013793.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "6F12AE7E",
+    "lastKnownWriteTime" : 6,
+    "last_content_update" : 1539883013793,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "id" : "6afb2c67c11046a4ab47f5f6b3ffcd14",
+        "name" : "instruments",
+        "title" : "instruments"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "object_explorer"
+}
