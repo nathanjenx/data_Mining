@@ -51,7 +51,7 @@ nbmModel <-function(trainDf, testDf) {
 geNBMModels <- function (trainDf, testDf, instruments){
   trainDf <- cleanData(trainDf)
   testDf <- cleanData(testDf)
-  predsRows <- c("inst", "predictios")
+  predsRows <- c("inst", "predictions")
   preds <- list()#data.frame(row.names = predsRows)
   for(i in 1:nrow(instruments)){
     inst <- instruments[i, 1]
@@ -60,6 +60,28 @@ geNBMModels <- function (trainDf, testDf, instruments){
     predsByInst <- nbmModel(trainDfBool,testDf)
     #predsDf <- data.frame(inst, predsByInst, row.names = predsRows)
     preds[[i]] <- data.frame(predsByInst)
+  }
+  return(preds)
+}
+
+getNBMByclass <- function (trainDf, testDf, map){
+  testDf <- cleanData(testDf)
+  trainDf <- cleanData1(trainDf)
+  predsRows <- c("inst", "predictions")
+  preds <- list()
+  i <- 1
+  for(class1 in seq_along(map)){
+    for(class2 in seq_along(map[[class1]])){
+      for(inst in seq_along(map[[class1]][[class2]])){
+        instrument <- map[[class1]][[class2]][[inst]]
+        class2 <- names(map[[class1]][class2])
+        trainDfBool <- createBooleanInstrumentByClass2(trainDf, instrument, class2)
+        trainDfBool <- cleanData2(trainDfBool)
+        predsByInst <- nbmModel(trainDfBool,testDf)
+        preds[[i]] <- data.frame(predsByInst)
+        i <- i + 1
+      }
+    }
   }
   return(preds)
 }
@@ -177,26 +199,26 @@ predictAerophone <- function(row){
 
 predictAeroSide <- function(row){
   inst <- "b"
-  if(multiCheck(c(row$Flute,row$Piccolo)) == TRUE){
+  #if(multiCheck(c(row$Flute,row$Piccolo)) == TRUE){
     inst <- "Multiple: Flute/Piccolo"
-  }else if(row$Piccolo == TRUE){
-    inst <- "Piccolo"
-  } else if(row$Flute == TRUE){
-    inst <- "Flute"
-  } else {
+  #}else if(row$Piccolo == TRUE){
+  #  inst <- "Piccolo"
+  #} else if(row$Flute == TRUE){
+  #  inst <- "Flute"
+  #} else {
     inst <- paste0("No match found: ",inst)
-  }
+#  }
   return(inst)
 }
 
 predictAeroLip <- function(row){
   inst <- "c"
-  if(multiCheck(c(row$Tuba, row$Frenchhorn, row$Trumpet, row$Trombone)) == TRUE){
+  if(multiCheck(c(row$Tuba, row$Trumpet, row$Trombone)) == TRUE){
     inst <- "Multiple: Tuba/Frenchhorn/Trumpet/Trombone"
   }else if(row$Tuba == TRUE){
     inst <- "Tuba"
-  } else if(row$Frenchhorn == TRUE){
-    inst <- "Frenchhorn"
+  #} else if(row$Frenchhorn == TRUE){
+   # inst <- "Frenchhorn"
   } else if(row$Trumpet == TRUE){
     inst <- "Trumpet"
   } else if(row$Trombone == TRUE){
@@ -223,14 +245,14 @@ predictAeroSingle <- function(row){
 
 predictAeroDouble <- function(row){
   inst <- "e"
-  if(multiCheck(c(row$Bassoon, row$Oboe, row$EnglishHorn)) == TRUE){
+ # if(multiCheck(c(row$Oboe)) == TRUE){
     inst <- "Multiple: Bassoon/Oboe/EnglishHorn"
-  }else if(row$Bassoon == TRUE){
-    inst <- "Bassoon"
-  } else if(row$Oboe == TRUE){
+  #}else if(row$Bassoon == TRUE){
+  #  inst <- "Bassoon"
+   if(row$Oboe == TRUE){
     inst <- "Oboe"
-  } else if(row$EnglishHorn == TRUE){
-    inst <- "EnglishHorn"
+  #} else if(row$EnglishHorn == TRUE){
+    #inst <- "EnglishHorn"
   } else {
     inst <- paste0("No match found: ",inst)
   }
@@ -252,7 +274,7 @@ predictChordophone <- function(row){
 
 predictChordComposite <- function(row){
   inst <- "g"
-  if(multiCheck(c(row$Guitar, row$Cello, row$DoubleBass, row$Violin, row$Viola, row$SynthBass)) == TRUE){
+  if(multiCheck(c(row$Guitar, row$Cello, row$DoubleBass, row$Violin, row$Viola)) == TRUE){
     inst <- "Multiple: Guitar/Cello/DoubleBass/Violin/Viola/SynthBass"
   }else if(row$Guitar == TRUE){
     inst <- "Guitar"
@@ -264,8 +286,8 @@ predictChordComposite <- function(row){
     inst <- "Violin"
   } else if(row$Viola == TRUE){
     inst <- "Viola"
-  } else if(row$SynthBass == TRUE){
-    inst <- "SynthBass"
+  #} else if(row$SynthBass == TRUE){
+    #inst <- "SynthBass"
   } else {
     inst <- paste0("No match found: ",inst)
   }

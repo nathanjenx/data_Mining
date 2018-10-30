@@ -78,6 +78,27 @@ cleanData <- function(df){
   return(df)
 }
 
+
+cleanData1 <- function(df){
+  cols <- c("HamoPk1", "HamoPk2", "HamoPk3", "HamoPk4", "HamoPk5", "HamoPk6", 
+            "HamoPk7", "HamoPk8", "HamoPk9", "HamoPk10", "HamoPk11", "HamoPk12", 
+            "HamoPk13", "HamoPk14", "HamoPk15", "HamoPk16", "HamoPk17", "HamoPk18", 
+            "HamoPk19", "HamoPk20", "HamoPk21", "HamoPk22", "HamoPk23", "HamoPk24", 
+            "HamoPk25", "HamoPk26", "HamoPk27", "HamoPk28")
+  
+  for(col in cols){
+    df[, col] <- as.numeric(df[,col])
+  }
+  return(df)
+}
+  
+cleanData2 <- function(df){
+  cols2remove <- c("note", "playmethod",	"class1",	"class2")
+  df <- removeCols(df, cols2remove)
+  
+  return(df)
+}
+
 importTestData <- function(path){
   df <- data.frame(read_csv(path))
   print("Data Read from CSV")
@@ -101,7 +122,7 @@ selectDataWithMix <- function(inst, mixNo){
   }
   
   sqlPt1 <- 'SELECT * FROM inst WHERE ' 
-  sqlPt2 <- ' != "?"'
+  sqlPt2 <- ' != "farts"'
   
   sql <- paste0(sqlPt1, mix, sqlPt2)
 
@@ -118,6 +139,27 @@ createBooleanInstrument <- function(df, inst){
   falseDf <- selectForInstrument(df, inst, FALSE)
   comb <- rbind(trueDf, falseDf)
   return(comb)
+}
+
+createBooleanInstrumentByClass2 <- function(df, inst, class2){
+  trueDf <- selectForInstrumentByClass2(df, inst, class2, TRUE)
+  falseDf <- selectForInstrumentByClass2(df, inst, class2, FALSE)
+  comb <- rbind(trueDf, falseDf)
+  return(comb)
+}
+
+selectForInstrumentByClass2 <- function (data, inst, class2, equal = TRUE){
+  equality <- "="
+  if(equal == FALSE){
+    equality = "!="
+  }
+  instSql <- paste0('"', inst, '"')
+  class2sql <- paste0('"', class2, '"')
+  sql <- paste("SELECT * FROM data WHERE class2 =", class2sql, "AND Instrument", equality, instSql, sep = " ")
+  print(sql)
+  df <- sqldf(sql)
+  df <- booleanCol(df, equal)
+  return(df)
 }
 
 selectForInstrument <- function (data, inst, equal = TRUE){
@@ -147,11 +189,12 @@ predicitionsCleansed <- function(testData, predictions){
             instruments[[3, 1]], instruments[[4, 1]], instruments[[5, 1]], instruments[[6, 1]],
             instruments[[7, 1]], instruments[[8, 1]], instruments[[9, 1]], instruments[[10, 1]],
             instruments[[11, 1]], instruments[[12, 1]], instruments[[13, 1]], instruments[[14, 1]],
-            instruments[[15, 1]], instruments[[16, 1]], instruments[[17, 1]], instruments[[18, 1]],
-            instruments[[19, 1]])
+            instruments[[15, 1]], instruments[[16, 1]])#, instruments[[17, 1]], instruments[[18, 1]],
+            #instruments[[19, 1]]) #, #
   p <- data.frame(row.names = rows)
   for(i in 1:nrow(testData)){
     o <- testData[i,]
+    
     n <- predictions
     temp <- data.frame(i, o$playmethod, o$class1, o$class2,
                        n[[1]][i,], n[[2]][i,], n[[3]][i,], 
@@ -159,8 +202,8 @@ predicitionsCleansed <- function(testData, predictions){
                        n[[7]][i,], n[[8]][i,], n[[9]][i,], 
                        n[[10]][i,], n[[11]][i,], n[[12]][i,], 
                        n[[13]][i,], n[[14]][i,], n[[15]][i,], 
-                       n[[16]][i,], n[[17]][i,], n[[18]][i,], 
-                       n[[19]][i,])
+                       n[[16]][i,])#, n[[17]][i,])
+                       #n[[18]][i,], n[[19]][i,])
     names(temp) <- rows
     p <- rbind(p, temp)
   }

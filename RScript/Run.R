@@ -157,8 +157,80 @@ map2Df <- function (names, d1, d2, outDf){
 }
 
 generatePredictionsFromNbmModel <- function(){
-  predictionsFull <- geNBMModels(extraTrainingData, testData, instruments)
+  predictionsFull <- geNBMModels(singleTrackTrain, testData, instruments)
   pClean <- predicitionsCleansed(testData, predictionsFull)
   prediction <- generatePredictions(pClean)
-  write_csv(prediction, "~/Desktop/rPredictAll2.csv")
+  write_csv(prediction, "~/Desktop/predictedByClass")
+}
+
+generatePredictionsFromNbmModelByClass <- function(){
+  map <- class2InstrumentMap() 
+  predictionsFull <- getNBMByclass(extraTrainingData, testData, map)
+  pClean <- predicitionsCleansed(testData, predictionsFull)
+  prediction <- generatePredictions(pClean)
+  write_csv(prediction, "~/Desktop/rPredictAll3.csv")
+}
+getCleanPredicts <- function(){
+  predictionsFull <- geNBMModels(singleTrackTrain, testData, instruments)
+  pClean <- predicitionsCleansed(testData, predictionsFull)
+  return(pClean)
+}
+
+class1Class2Map <- function(){
+  aerophone <- list("aero_lip-vibrated", "aero_side", "aero_single-reed", "aero_free-reed", "aero_double-reed")
+  chordophone <- list("chrd_composite", "chrd_simple")
+  list <- list(aerophone, chordophone)
+  names(list) <- c("aerophone", "chordophone")
+  return(list)
+}
+
+iterateClassMap <- function(list){
+  for(i in seq_along(list)){
+    for(j in seq_along(list[[i]])){
+      for(k in seq_along(list[[i]][[j]]))
+      print(paste0(names(list[i]), ", ", names(list[[i]][j]), ", ",list[[i]][[j]][[k]]))
+    }
+  }
+}
+class2InstrumentMap <- function(){
+  aero_double <- list("Bassoon", "Oboe", "EnglishHorn")
+  #aero_free <- list("Accordian")
+  aero_lip <- list("Tuba", "Frenchhorn", "Trumpet", "Trombone")
+  aero_side <- list("Flute", "Piccolo")
+  aero_single  <- list("Clarinet", "Saxophone")
+  aerophone <- list(aero_lip, aero_side, aero_single, aero_double)
+  names(aerophone) <- c("aero_lip-vibrated", "aero_side", "aero_single-reed", "aero_double-reed")
+  
+  chrd_composite<- list("Guitar", "Cello", "DoubleBass", "Violin", "Viola","SynthBass")
+ # chrd_simple <- list("Piano")
+  chordophone <- list(chrd_composite)
+  names(chordophone) <- c("chrd_composite")
+  list <- list(aerophone, chordophone)
+  names(list) <- c("aerophone", "chordophone")
+  return(list)
+}
+
+addClassesToSingle <- function(df){
+  df <- getIndividualTracks(trainingData)
+  
+  instsRepl <- list("Saxophone", "Guitar", "Trumpet", "Trombone", "clarinet", "AcousticBass")
+  
+  for(i in 1:nrow(df)){
+    inst <- df[i,]$Instrument
+    for(j in seq_along(instsRepl)){
+      match <- grepl(instsRepl[[j]], inst, fixed = TRUE)
+      if( match == TRUE){
+        inst <- instsRepl[[j]]
+        break;
+      }
+    }
+    if(inst == "clarinet"){
+      inst <- "Clarinet"
+    } else if (inst == "AcousticBass"){
+      inst <- "DoubleBass"
+    }
+    
+    df[i,]$Instrument <- inst
+  }
+  return(df)
 }
